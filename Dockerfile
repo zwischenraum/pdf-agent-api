@@ -35,7 +35,7 @@ ENV PATH="/app/.venv/bin:$PATH"
 
 # Copy application code
 COPY --chown=appuser:appuser src/ ./src/
-COPY --chown=appuser:appuser pyproject.toml README.md ./
+COPY --chown=appuser:appuser pyproject.toml ./
 
 # Install the project in the virtual environment
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/

@@ -2,7 +2,6 @@
 name = "pdf-agent-api"
 version = "0.1.0"
 description = "A PDF Visual Question Answering API using AI agents"
-readme = "README.md"
 requires-python = ">=3.12"
 authors = [
     {name = "Jens Lücke", email = "jens.luecke@aleph-alpha.com"}
