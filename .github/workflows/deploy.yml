@@ -66,15 +66,20 @@ jobs:
         echo "${{ secrets.KUBECONFIG }}" | base64 --decode > $HOME/.kube/config
         chmod 600 $HOME/.kube/config
 
+    - name: Test kubectl connectivity
+      run: |
+        kubectl cluster-info
+        kubectl get namespaces
+
     - name: Create/update secrets
       run: |
-        # Create the secret directly with kubectl
+        # Delete existing secret if it exists, then create new one
+        kubectl delete secret pdf-agent-secret -n fsi --ignore-not-found=true
         kubectl create secret generic pdf-agent-secret \
           --from-literal=API_KEY="${{ secrets.API_KEY }}" \
           --from-literal=API_BASE="${{ secrets.API_BASE }}" \
           --from-literal=MODEL_ID="${{ secrets.MODEL_ID }}" \
-          --namespace=fsi \
-          --dry-run=client -o yaml | kubectl apply --validate=false -f -
+          --namespace=fsi
 
     - name: Deploy manifests
       run: |
