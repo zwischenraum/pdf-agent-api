@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     )
     debug: bool = Field(default=True, description="Enable debug mode")
 
+    # Evaluation Configuration
+    eval_api_url: str = Field(
+        default="http://localhost:8000", description="Base URL for the evaluation API"
+    )
+
     # Logging
     log_level: str = Field(default="INFO", description="Logging level")
 

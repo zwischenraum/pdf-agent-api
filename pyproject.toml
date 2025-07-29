@@ -20,6 +20,8 @@ dependencies = [
     "openinference-instrumentation-smolagents>=0.1.14",
     "openinference-instrumentation-litellm>=0.1.24",
     "uvicorn>=0.35.0",
+    "httpx>=0.28.0",
+    "pypdf>=5.9.0",
 ]
 
 [project.optional-dependencies]
@@ -28,12 +30,11 @@ dev = [
     "pre-commit>=4.0.0",
     "pytest>=8.0.0",
     "pytest-asyncio>=0.25.0",
-    "httpx>=0.28.0",
 ]
 
 [project.scripts]
-pdf-agent-api = "src.main:run_server"
-run-eval = "eval.run_eval:main"
+pdf-agent = "src.main:run_server"
+eval = "eval.run_eval:main"
 
 [tool.ruff]
 line-length = 100

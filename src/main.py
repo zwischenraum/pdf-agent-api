@@ -5,8 +5,9 @@ from pdf2image import convert_from_bytes
 from phoenix.otel import register
 from pydantic import BaseModel
 from smolagents import ActionStep, CodeAgent, LiteLLMModel, tool
+from pypdf import PdfReader
+from io import BytesIO
 
-# from .visual_qa import VisualQATool
 from .prompts import SYSTEM_PROMPT
 from .settings import settings
 
@@ -45,25 +46,31 @@ class PDFState:
             return None
 
         return convert_from_bytes(
-            self.pdf_bytes, dpi=100, first_page=page_index + 1, last_page=page_index + 1
+            self.pdf_bytes, dpi=150, first_page=page_index + 1, last_page=page_index + 1
         )[0]
 
     def next_page(self) -> str:
         """Move to the next page."""
         self.current_page = min(self.current_page + 1, self.total_pages - 1)
-        return f"Switched to page {self.current_page + 1}."
+        reader = PdfReader(BytesIO(self.pdf_bytes))
+        page_text = reader.pages[self.current_page].extract_text()
+        return f"Switched to page {self.current_page + 1}. Page text: {page_text}" if page_text else f"Switched to page {self.current_page + 1}."
 
     def previous_page(self) -> str:
         """Move to the previous page."""
         self.current_page = max(self.current_page - 1, 0)
-        return f"Switched to page {self.current_page + 1}."
+        reader = PdfReader(BytesIO(self.pdf_bytes))
+        page_text = reader.pages[self.current_page].extract_text()
+        return f"Switched to page {self.current_page + 1}. Page text: {page_text}" if page_text else f"Switched to page {self.current_page + 1}."
 
     def go_to_page(self, page_number: int) -> str:
         """Move to the specified page (1-based)."""
         # Convert to 0-based index
         page_index = page_number - 1
         self.current_page = min(max(page_index, 0), self.total_pages - 1)
-        return f"Switched to page {self.current_page + 1}."
+        reader = PdfReader(BytesIO(self.pdf_bytes))
+        page_text = reader.pages[self.current_page].extract_text()
+        return f"Switched to page {self.current_page + 1}. Page text: {page_text}" if page_text else f"Switched to page {self.current_page + 1}."
 
 
 # ------------------------------------------------------------------
@@ -124,7 +131,7 @@ async def run_agent(pdf_bytes: bytes, question: str):
 
     agent.prompt_templates["system_prompt"] = SYSTEM_PROMPT
 
-    answer = await to_thread(agent.run, question, images=[pdf_state.get_page_image()], max_steps=10)
+    answer = await to_thread(agent.run, question, images=[pdf_state.get_page_image()])
 
     return Response(answer=answer, page=pdf_state.current_page + 1)
 

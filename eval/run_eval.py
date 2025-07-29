@@ -5,14 +5,14 @@ Simple script to run visual QA evaluations.
 Usage:
     python run_eval.py                              # Use default files
     python run_eval.py --eval-set my_questions.jsonl  # Custom eval set
-    python run_eval.py --image my_image.png         # Custom image
+    python run_eval.py --pdf my_document.pdf         # Custom PDF
     python run_eval.py --output results.json        # Custom output file
 """
 
 import argparse
 from pathlib import Path
 
-from evaluate import run_evaluation
+from eval.evaluate import run_evaluation
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
         "--eval-set", default="eval/eval_set.jsonl", help="Path to evaluation set (JSONL format)"
     )
 
-    parser.add_argument("--image", default="tests/test.png", help="Path to image file to analyze")
+    parser.add_argument("--pdf", default="tests/test.pdf", help="Path to PDF file to analyze")
 
     parser.add_argument(
         "--output", help="Output file for results (default: auto-generated timestamp)"
@@ -41,14 +41,14 @@ def main():
         print(f"Error: Evaluation set '{args.eval_set}' not found.")
         return 1
 
-    if not Path(args.image).exists():
-        print(f"Error: Image file '{args.image}' not found.")
+    if not Path(args.pdf).exists():
+        print(f"Error: PDF file '{args.pdf}' not found.")
         return 1
 
     # Run evaluation
     try:
         results = run_evaluation(
-            eval_set_path=args.eval_set, image_path=args.image, output_file=args.output
+            eval_set_path=args.eval_set, pdf_path=args.pdf, output_file=args.output
         )
 
         if results:

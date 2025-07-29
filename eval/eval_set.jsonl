@@ -1,0 +1,9 @@
+{"question": "What did Gemma3 27B score in InfoVQA after fine-tuning?", "answer": "64.6"}
+{"question": "What tokenizer is used for Gemma3?", "answer": "SentencePiece"}
+{"question": "What vision encoder is used for Gemma3?", "answer": "400M variant of SigLIP encoder"}
+{"question": "What model sizes of Gemma3 are available?", "answer": "1B, 4B, 12B, 27B"}
+{"question": "Which model variants of Gemma3 have a vision encoder?", "answer": "4B, 12B, 27B"}
+{"question": "What is the vocab size of Gemma3?", "answer": "256k"}
+{"question": "What is the context length of Gemma3?", "answer": "128k"}
+{"question": "What compute infrastructure is used to train Gemma3?", "answer": "TPUv4, TPUv5e and TPUv5p"}
+{"question": "On how many tokens are the different model variants of Gemma3 trained?", "answer": "14T tokens for 27B, 12T for the 12B version, 4T for the 4B, and 2T tokens for the 1B."}

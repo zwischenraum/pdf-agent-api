@@ -3,10 +3,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+import httpx
 from openai import OpenAI
 
 from src.settings import settings
-from src.visual_qa import VisualQATool, encode_image
 
 JUDGE_SYSTEM_PROMPT = """You are an expert evaluator for question-answering systems.
 
@@ -17,8 +17,10 @@ Consider these factors:
 - Different formatting of the same information should be considered correct (e.g., "978,35 EUR" vs "978.35 EUR")
 - Minor variations in date formats should be considered correct (e.g., "04.10.2018" vs "4.10.2018")
 - Semantic equivalence matters more than exact string matching
-- Partial answers that contain the key information should be considered correct
+- Partial answers that contain the key information should be considered correct ONLY if the expected answer doesn't require multiple elements
+- Completeness is critical: if the expected answer contains multiple items, values, or components, the predicted answer must include ALL of them to be correct (e.g., if expected is "3, 12 and 7" but predicted is only "3 and 7", this is incorrect)
 - If the predicted answer contains "No answer in page" or similar, it should be considered incorrect unless the expected answer also indicates no answer
+- Page references and additional context information should be ignored when comparing core answers
 
 Respond with exactly one word: either "correct" or "incorrect"."""
 
@@ -150,7 +152,7 @@ def load_eval_set(filepath: str) -> list[dict[str, str]]:
 
 def run_evaluation(
     eval_set_path: str = "eval/eval_set.jsonl",
-    image_path: str = "tests/test.png",
+    pdf_path: str = "tests/test.pdf",
     output_file: str = None,
 ):
     """Run the complete evaluation pipeline."""
@@ -163,9 +165,9 @@ def run_evaluation(
     print("Starting Visual QA Evaluation Pipeline")
     print("=" * 50)
 
-    # Verify image file exists
-    if not Path(image_path).exists():
-        print(f"Error: Image file '{image_path}' not found.")
+    # Verify PDF file exists
+    if not Path(pdf_path).exists():
+        print(f"Error: PDF file '{pdf_path}' not found.")
         return
 
     # Load evaluation set
@@ -173,23 +175,19 @@ def run_evaluation(
     if not eval_data:
         return
 
-    # Initialize tools
-    print(f"Initializing Visual QA tool with model: {settings.model_id}")
-    visual_qa_tool = VisualQATool(
-        model_id=settings.model_id, api_base=settings.api_base, api_key=settings.api_key
-    )
-
+    # Initialize judge
     print(f"Initializing LLM Judge with model: {settings.model_id}")
     judge = LLMJudge(
         model_id=settings.model_id, api_base=settings.api_base, api_key=settings.api_key
     )
 
-    # Encode image once
-    print(f"Encoding image: {image_path}")
+    # Read PDF file once
+    print(f"Reading PDF file: {pdf_path}")
     try:
-        base64_image = encode_image(image_path)
+        with open(pdf_path, "rb") as f:
+            pdf_content = f.read()
     except Exception as e:
-        print(f"Error encoding image: {e}")
+        print(f"Error reading PDF file: {e}")
         return
 
     # Initialize results tracker
@@ -197,6 +195,7 @@ def run_evaluation(
 
     # Process each question
     print(f"\nProcessing {len(eval_data)} questions...")
+    print(f"API URL: {settings.eval_api_url}")
     print("-" * 50)
 
     for i, item in enumerate(eval_data, 1):
@@ -205,12 +204,38 @@ def run_evaluation(
 
         print(f"[{i}/{len(eval_data)}] Processing: {question}")
 
-        # Get prediction from visual QA tool
+        # Get prediction from API
         try:
-            predicted_answer = visual_qa_tool(base64_image, question)
-            print(f"  Predicted: {predicted_answer}")
+            with httpx.Client() as client:
+                files = {"file": ("document.pdf", pdf_content, "application/pdf")}
+                data = {"question": question}
+
+                response = client.post(
+                    f"{settings.eval_api_url}/ask_pdf",
+                    files=files,
+                    data=data,
+                    timeout=300.0,  # 5 minute timeout
+                )
+                response.raise_for_status()
+
+                result = response.json()
+                predicted_answer = result.get("answer", "No answer")
+
+                # Handle list responses
+                if isinstance(predicted_answer, list):
+                    predicted_answer = " ".join(str(item) for item in predicted_answer)
+
+                print(f"  Predicted: {predicted_answer}")
+                print(f"  Page: {result.get('page', 'N/A')}")
+
+        except httpx.TimeoutException:
+            print("  Error: Request timed out")
+            predicted_answer = "Error: Request timed out"
+        except httpx.HTTPError as e:
+            print(f"  Error in API call: {e}")
+            predicted_answer = f"Error: {str(e)}"
         except Exception as e:
-            print(f"  Error in visual QA: {e}")
+            print(f"  Unexpected error: {e}")
             predicted_answer = f"Error: {str(e)}"
 
         # Grade the answer using LLM judge
