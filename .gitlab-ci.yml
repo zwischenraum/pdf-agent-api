@@ -14,7 +14,7 @@ test:
   before_script:
     - apt-get update -qq && apt-get install -y poppler-utils
     - pip install uv
-    - uv sync --frozen
+    - uv sync --frozen --extra dev
 
   script:
     - uv run ruff check .
