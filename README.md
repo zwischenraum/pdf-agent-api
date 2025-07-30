@@ -91,9 +91,7 @@ LOG_LEVEL=INFO
 
 1. Run the FastAPI server:
 ```bash
-python src/main.py
-# Or using the console script:
-pdf-agent-api
+uv run pdf-agent
 ```
 
 2. The API will be available at `http://localhost:8000`
@@ -128,17 +126,7 @@ curl -X POST "http://localhost:8000/ask_pdf" \
 The project includes a comprehensive evaluation framework:
 
 ```bash
-# Run evaluation with default settings
-python eval/run_eval.py
-
-# Or using the console script
-run-eval
-
-# Custom evaluation
-python eval/run_eval.py \
-  --eval-set eval/eval_set.jsonl \
-  --image tests/test.png \
-  --output my_results.json
+uv run eval
 ```
 
 ### Development

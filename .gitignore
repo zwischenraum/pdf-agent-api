@@ -42,3 +42,9 @@ htmlcov/
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Backup files
+*.bak
+
+# Kubernetes deployment files (kept locally but not tracked)
+k8s/
