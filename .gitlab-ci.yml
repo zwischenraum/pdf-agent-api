@@ -1,0 +1,55 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_REGISTRY: $CI_REGISTRY
+  IMAGE_NAME: $CI_REGISTRY_IMAGE
+
+test:
+  stage: test
+  image: python:3.12-slim
+  
+  before_script:
+    - apt-get update -qq && apt-get install -y poppler-utils
+    - pip install uv
+    - uv sync --frozen --dev
+  
+  script:
+    - uv run ruff check .
+    - uv run ruff format --check .
+  
+# Build and push Docker image
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  
+  script:
+    - docker build -t $IMAGE_NAME:$CI_COMMIT_SHA -t $IMAGE_NAME:latest .
+    - docker push $IMAGE_NAME:$CI_COMMIT_SHA
+    - docker push $IMAGE_NAME:latest
+  
+  only:
+    - main
+    - develop
+  
+deploy:
+  stage: deploy
+  image: bitnami/kubectl:latest
+  
+  before_script:
+    - echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+  
+  script:
+    - kubectl create secret generic pdf-agent-secret --from-literal=API_BASE="$API_BASE" --from-literal=MODEL_ID="$MODEL_ID" --from-literal=API_KEY="$API_KEY" -n fsi --dry-run=client -o yaml | kubectl apply -f -
+    - envsubst < k8s/deployment.yaml | kubectl apply -f -
+    - kubectl apply -f k8s/configmap.yaml -f k8s/service.yaml -f k8s/ingress.yaml
+    - kubectl rollout status deployment/pdf-agent-api -n fsi
+  
+  only:
+    - main
