@@ -44,10 +44,12 @@ build:
 
 deploy:
   stage: deploy
-  image: bitnami/kubectl:latest
+  image: alpine/k8s:1.29.1
 
   before_script:
+    - mkdir -p ~/.kube
     - echo $KUBE_CONFIG | base64 -d > ~/.kube/config
+    - apk add --no-cache gettext
 
   script:
     - kubectl create secret generic pdf-agent-secret --from-literal=API_BASE="$API_BASE" --from-literal=MODEL_ID="$MODEL_ID" --from-literal=API_KEY="$API_KEY" -n fsi --dry-run=client -o yaml | kubectl apply -f -
