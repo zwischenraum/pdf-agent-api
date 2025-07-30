@@ -1,4 +1,5 @@
 stages:
+  - test
   - build
   - deploy
 
@@ -13,7 +14,7 @@ test:
   before_script:
     - apt-get update -qq && apt-get install -y poppler-utils
     - pip install uv
-    - uv sync --frozen --dev
+    - uv sync --frozen
   
   script:
     - uv run ruff check .
