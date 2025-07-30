@@ -16,7 +16,7 @@ spec:
         app: pdf-agent-api
     spec:
       imagePullSecrets:
-      - name: gitlab-registry-secret
+      - name: pdf-agent-gitlab
       containers:
       - name: pdf-agent-api
         image: ${IMAGE_NAME}:${CI_COMMIT_SHA}
