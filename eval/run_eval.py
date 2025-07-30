@@ -26,7 +26,7 @@ def main():
         "--eval-set", default="eval/eval_set.jsonl", help="Path to evaluation set (JSONL format)"
     )
 
-    parser.add_argument("--pdf", default="tests/test.pdf", help="Path to PDF file to analyze")
+    parser.add_argument("--pdf", default="tests/gemma3.pdf", help="Path to PDF file to analyze")
 
     parser.add_argument(
         "--output", help="Output file for results (default: auto-generated timestamp)"
