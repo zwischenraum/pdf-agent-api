@@ -6,7 +6,10 @@ metadata:
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
     nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    cert-manager.io/cluster-issuer: letsencrypt-for-stackit
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
 spec:
+  ingressClassName: public
   rules:
   - host: pdf-agent.customer.pharia.com
     http:
@@ -18,3 +21,7 @@ spec:
             name: pdf-agent-service
             port:
               number: 8000
+  tls:
+  - hosts:
+    - pdf-agent.customer.pharia.com
+    secretName: pdf-agent-tls
