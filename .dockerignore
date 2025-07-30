@@ -55,4 +55,4 @@ Dockerfile*
 docker-compose*
 
 # Development files
-.pre-commit-config.yaml 
+.pre-commit-config.yaml

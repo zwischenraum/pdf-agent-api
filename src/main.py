@@ -1,12 +1,12 @@
 from asyncio import to_thread
+from io import BytesIO
 
 from fastapi import FastAPI, Form, UploadFile
 from pdf2image import convert_from_bytes
 from phoenix.otel import register
 from pydantic import BaseModel
-from smolagents import ActionStep, CodeAgent, LiteLLMModel, tool
 from pypdf import PdfReader
-from io import BytesIO
+from smolagents import ActionStep, CodeAgent, LiteLLMModel, tool
 
 from .prompts import SYSTEM_PROMPT
 from .settings import settings
@@ -54,14 +54,22 @@ class PDFState:
         self.current_page = min(self.current_page + 1, self.total_pages - 1)
         reader = PdfReader(BytesIO(self.pdf_bytes))
         page_text = reader.pages[self.current_page].extract_text()
-        return f"Switched to page {self.current_page + 1}. Page text: {page_text}" if page_text else f"Switched to page {self.current_page + 1}."
+        return (
+            f"Switched to page {self.current_page + 1}. Page text: {page_text}"
+            if page_text
+            else f"Switched to page {self.current_page + 1}."
+        )
 
     def previous_page(self) -> str:
         """Move to the previous page."""
         self.current_page = max(self.current_page - 1, 0)
         reader = PdfReader(BytesIO(self.pdf_bytes))
         page_text = reader.pages[self.current_page].extract_text()
-        return f"Switched to page {self.current_page + 1}. Page text: {page_text}" if page_text else f"Switched to page {self.current_page + 1}."
+        return (
+            f"Switched to page {self.current_page + 1}. Page text: {page_text}"
+            if page_text
+            else f"Switched to page {self.current_page + 1}."
+        )
 
     def go_to_page(self, page_number: int) -> str:
         """Move to the specified page (1-based)."""
@@ -70,7 +78,11 @@ class PDFState:
         self.current_page = min(max(page_index, 0), self.total_pages - 1)
         reader = PdfReader(BytesIO(self.pdf_bytes))
         page_text = reader.pages[self.current_page].extract_text()
-        return f"Switched to page {self.current_page + 1}. Page text: {page_text}" if page_text else f"Switched to page {self.current_page + 1}."
+        return (
+            f"Switched to page {self.current_page + 1}. Page text: {page_text}"
+            if page_text
+            else f"Switched to page {self.current_page + 1}."
+        )
 
 
 # ------------------------------------------------------------------

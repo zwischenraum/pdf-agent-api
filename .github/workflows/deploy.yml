@@ -17,10 +17,10 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     outputs:
       image: ${{ steps.meta.outputs.tags }}
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
