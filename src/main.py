@@ -18,6 +18,7 @@ from .settings import settings
 #     auto_instrument=True,
 # )
 
+
 app = FastAPI()
 
 
@@ -133,13 +134,15 @@ async def run_agent(pdf_bytes: bytes, question: str):
     agent = CodeAgent(
         tools=[next_page, previous_page, go_to_page],
         model=LiteLLMModel(
-            model_id=f"hosted_vllm/{settings.model_id}",
+            model_id=settings.model_id,
             api_base=settings.api_base,
             api_key=settings.api_key,
+            temperature=0.0,
         ),
-        additional_authorized_imports=["*"],
         step_callbacks=[current_page_callback],
         verbosity_level=0,
+        code_block_tags="markdown",
+        planning_interval=3,
     )
 
     agent.prompt_templates["system_prompt"] = SYSTEM_PROMPT
