@@ -3,7 +3,7 @@ from io import BytesIO
 
 from fastapi import FastAPI, Form, UploadFile
 from pdf2image import convert_from_bytes
-from phoenix.otel import register
+# from phoenix.otel import register
 from pydantic import BaseModel
 from pypdf import PdfReader
 from smolagents import ActionStep, CodeAgent, LiteLLMModel, tool
@@ -11,11 +11,11 @@ from smolagents import ActionStep, CodeAgent, LiteLLMModel, tool
 from .prompts import SYSTEM_PROMPT
 from .settings import settings
 
-tracer_provider = register(
-    endpoint="http://localhost:6006/v1/traces",
-    project_name="smolagents-app",
-    auto_instrument=True,
-)
+# tracer_provider = register(
+#     endpoint="http://localhost:6006/v1/traces",
+#     project_name="smolagents-app",
+#     auto_instrument=True,
+# )
 
 app = FastAPI()
 
