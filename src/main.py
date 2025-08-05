@@ -3,6 +3,7 @@ from io import BytesIO
 
 from fastapi import FastAPI, Form, UploadFile
 from pdf2image import convert_from_bytes
+
 # from phoenix.otel import register
 from pydantic import BaseModel
 from pypdf import PdfReader
